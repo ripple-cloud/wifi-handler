@@ -1,0 +1,46 @@
+#!/bin/sh
+# Copyright (C) 2014 Ripple Cloud
+
+# params
+ssid=$1
+security=$2
+password=$3
+
+ifaceid=0
+
+echo "$ssid"
+echo "$security"
+echo "$password"
+
+# disable existing wifi interfaces
+while :; do
+  uci get wireless.@wifi-iface[$ifaceid] > /dev/null 2>&1
+  if [ $? = 0 ]; then
+    uci set wireless.@wifi-iface[$ifaceid].disabled=1
+    ifaceid=$(($ifaceid + 1))
+  else
+    break
+  fi
+done
+
+# add the new wifi-iface
+uci add wireless wifi-iface
+uci set wireless.@wifi-iface[-1].device=radio0
+uci set wireless.@wifi-iface[-1].network=wan
+uci set wireless.@wifi-iface[-1].mode=sta
+uci set wireless.@wifi-iface[-1].ssid=$ssid
+uci set wireless.@wifi-iface[-1].encryption=$security
+uci set wireless.@wifi-iface[-1].key=$password
+
+# remove eth0 interface from wan
+uci delete network.wan.ifname
+
+# commit changes
+uci commit
+
+# reload network
+ubus call network reload
+/sbin/wifi down
+/sbin/wifi up
+
+
