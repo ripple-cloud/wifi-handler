@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 # Shell script running on raspberry pi.
 # Returns JSON with names of available SSIDs. eg. {"network": [{"SSID":"RippleOS"},{"SSID":"homewiFi"}]}
 
