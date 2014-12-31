@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/public/stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/public/stylesheets/form.css" />
+
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/typeahead.bundle.min.js"></script>
+    <script src="/public/js/form.js"></script>
+  </head>
+
+  <body>
+    <h1>Ripple</h1>
+
+    <form method="post" action="/join" id="loginForm">
+      <input class="typeahead form-control" type="text" placeholder="Network Name" id="ssid" name="ssid"/>
+      <input type="password" class="password form-control" id="password" name="password" placeholder="Password" />
+      <button type="submit" class="button form-control">Join WiFi Network</button>
+    </form>
+
+  </body>
+</html>
