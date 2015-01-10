@@ -12,42 +12,25 @@ var (
 	joinTmpl *template.Template
 )
 
-const formTmplContents = `
-<html>
-		<body>
-			<h1>Join WiFi Network</h1>
-			<form method="post" action="/join" id="loginForm">
-				<label for="ssid">Network Name</label>
-				<input type="text" id="ssid" name="ssid"/>
-				<label for="password">Password</label>
-				<input type="password" id="password" name="password"/>
-					
-				<button type="submit">Join</button>
-			</form>
-		</body>
-</html>
-`
-
-const joinTmplContents = `
-<html>
-		<body>
-			<h1>Connecting to <b>{{.SSID}}</b>...</h1>
-			<p>You can now switch back to <b>{{.SSID}}</b> network. To find Pi's IP address go to your router configuration page and check DHCP leases.</p>
-			<p>Once you know the IP address of Pi, you can access it by running <b>telnet 192.168.X.X</b>.</p>
-		</body>
-</html>
-`
-
 func init() {
-	formTmpl = template.Must(template.New("form").Parse(formTmplContents))
-	joinTmpl = template.Must(template.New("join").Parse(joinTmplContents))
+	formTmpl = template.Must(template.New("form").ParseFiles("templates/form.html"))
+	joinTmpl = template.Must(template.New("join").ParseFiles("templates/join.html"))
 }
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
-	err := formTmpl.Execute(w, struct{}{})
+	err := formTmpl.ExecuteTemplate(w, "form.html", struct{}{})
 	if err != nil {
 		log.Fatal("WiFi Handler: ", err)
 	}
+}
+
+func networkHandler(w http.ResponseWriter, r *http.Request) {
+	res, execErr := exec.Command("sh", "network.sh").Output()
+	if execErr != nil {
+		log.Println(execErr)
+	}
+
+	w.Write(res)
 }
 
 func joinHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +43,7 @@ func joinHandler(w http.ResponseWriter, r *http.Request) {
 		cmd.Run()
 	}()
 
-	err := joinTmpl.Execute(w, struct {
+	err := joinTmpl.ExecuteTemplate(w, "join.html", struct {
 		SSID string
 	}{
 		ssid,
@@ -71,10 +54,15 @@ func joinHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", formHandler)
+	http.HandleFunc("/index", formHandler)
 	http.HandleFunc("/join", joinHandler)
 
-	err := http.ListenAndServe("0.0.0.0:8080", nil)
+	http.HandleFunc("/network", networkHandler)
+
+	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("/templates"))))
+	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
+
+	err := http.ListenAndServe("0.0.0.0:8000", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
