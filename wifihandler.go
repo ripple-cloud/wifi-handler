@@ -41,14 +41,14 @@ func joinHandler(w http.ResponseWriter, r *http.Request) {
 	var encryption string
 
 	switch security {
-	default:
-		encryption = "psk2"
 	case "None":
 		encryption = "none"
 	case "WEP":
 		encryption = "wep"
 	case "WPA":
 		encryption = "psk"
+	default:
+		encryption = "psk2"
 	}
 
 	go func() {
