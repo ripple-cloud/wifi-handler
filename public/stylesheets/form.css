@@ -7,16 +7,20 @@
 .tt-input, .password, .button {
   width: 350px;
   margin-left: 30px;
+  border-radius: 0px !important;
+  margin-top: 14px;
 }
 
 .button {
   background: #551F55;
   color: white;
+  margin-top: 14px;
 }
 
 .tt-hint {
   color: #999;
   margin-left: 30px;
+  margin-top: 14px;
 }
 
 .tt-dropdown-menu {
