@@ -13,8 +13,13 @@
     <h1>Ripple</h1>
 
     <form method="post" action="/join" id="loginForm">
-      <input class="typeahead form-control" type="text" placeholder="Network Name" id="ssid" name="ssid"/>
-      <input type="password" class="password form-control" id="password" name="password" placeholder="Password" />
+      <div id="prefetch">
+        <input class="typeahead form-control" type="text" placeholder="Network Name" id="ssid" name="ssid"/>
+      </div>
+      <input type="password" class="password form-control" placeholder="password "id="password" name="password" />
+      <div id="the-basics">
+        <input class="typeahead form-control" type="text" placeholder="Security" id="security" name="security"/>
+      </div>
       <button type="submit" class="button form-control">Join WiFi Network</button>
     </form>
 

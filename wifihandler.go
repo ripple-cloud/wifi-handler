@@ -36,7 +36,20 @@ func networkHandler(w http.ResponseWriter, r *http.Request) {
 func joinHandler(w http.ResponseWriter, r *http.Request) {
 	ssid := r.FormValue("ssid")
 	password := r.FormValue("password")
-	encryption := "psk2" // TODO: should be possible to change
+	security := r.FormValue("security")
+
+	var encryption string
+
+	switch security {
+	case "None":
+		encryption = "none"
+	case "WEP":
+		encryption = "wep"
+	case "WPA":
+		encryption = "psk"
+	default:
+		encryption = "psk2"
+	}
 
 	go func() {
 		cmd := exec.Command("/usr/bin/connect-wifi", ssid, encryption, password)
