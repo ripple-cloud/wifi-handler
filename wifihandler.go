@@ -1,10 +1,10 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"os/exec"
-	"text/template"
 )
 
 var (
@@ -13,12 +13,61 @@ var (
 )
 
 func init() {
-	formTmpl = template.Must(template.New("form").ParseFiles("templates/form.html"))
-	joinTmpl = template.Must(template.New("join").ParseFiles("templates/join.html"))
+	formBindata, err := Asset("templates/form.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	joinBindata, err := Asset("templates/join.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	formTmpl = template.Must(template.New("form").Parse(string(formBindata)))
+	joinTmpl = template.Must(template.New("join").Parse(string(joinBindata)))
 }
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
-	err := formTmpl.ExecuteTemplate(w, "form.html", struct{}{})
+	bootstrapJS, bsErr := Asset("public/js/bootstrap.min.js")
+	if bsErr != nil {
+		log.Fatal(bsErr)
+	}
+	formJS, formErr := Asset("public/js/form.js")
+	if formErr != nil {
+		log.Fatal(formErr)
+	}
+	jqueryJS, jErr := Asset("public/js/jquery.min.js")
+	if jErr != nil {
+		log.Fatal(jErr)
+	}
+	typeaheadJS, tErr := Asset("public/js/typeahead.bundle.min.js")
+	if tErr != nil {
+		log.Fatal(tErr)
+	}
+	bootstrapCSS, bErr := Asset("public/stylesheets/bootstrap.min.css")
+	if bErr != nil {
+		log.Fatal(bErr)
+	}
+	formCSS, fErr := Asset("public/stylesheets/form.css")
+	if fErr != nil {
+		log.Fatal(fErr)
+	}
+
+	err := formTmpl.Execute(w, struct {
+		SafeBootstrapJS  template.JS
+		SafeFormJS       template.JS
+		SafeJqueryJS     template.JS
+		SafeTypeaheadJS  template.JS
+		SafeBootstrapCSS template.CSS
+		SafeFormCSS      template.CSS
+	}{
+		template.JS(bootstrapJS),
+		template.JS(formJS),
+		template.JS(jqueryJS),
+		template.JS(typeaheadJS),
+		template.CSS(bootstrapCSS),
+		template.CSS(formCSS),
+	})
 	if err != nil {
 		log.Fatal("WiFi Handler: ", err)
 	}
@@ -56,7 +105,7 @@ func joinHandler(w http.ResponseWriter, r *http.Request) {
 		cmd.Run()
 	}()
 
-	err := joinTmpl.ExecuteTemplate(w, "join.html", struct {
+	err := joinTmpl.Execute(w, struct {
 		SSID string
 	}{
 		ssid,
@@ -71,9 +120,6 @@ func main() {
 	http.HandleFunc("/join", joinHandler)
 
 	http.HandleFunc("/network", networkHandler)
-
-	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("/templates"))))
-	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 
 	err := http.ListenAndServe("0.0.0.0:8000", nil)
 	if err != nil {
